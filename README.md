@@ -75,56 +75,6 @@ If macOS asks whether the Gateway can receive incoming connections, choose **All
 | Direction is wrong in AR | Calibrate the compass (figure-of-eight movement) and stay away from metal. |
 | The iPhone and the Gateway never find each other during development | Builds installed from Xcode use the Game Center *sandbox*; TestFlight and App Store builds use *production*. Both sides must be the same kind of build. |
 
-## How it is built
-
-```
-X-Plane 12 ──UDP 49002──▶ Gateway (Mac) ──Game Center (GKMatch)──▶ Traffic Inbound (iPhone / iPad)
-     ▲                         │                                         radar · AR · spatial sound
-     └──RREF 49000 (read)──────┘
-```
-
-| Folder | Content |
-|---|---|
-| `Core/` | Swift package **TrafficCore**, shared by both apps, with 176 tests. Parsing of X-Plane's UDP (`XGPS2`, `XATT2`, `XTRA2`), RREF requests and replies, duplicate filter, flight messages, `MatchSession` (Game Center), geodesy (WGS84 → east/north/up, bearing, elevation), radar scale and projection, extrapolation, AR maths, sound maths (propagation, Doppler, air absorption, audibility), sonic boom synthesis, aircraft families. |
-| `Gateway/Gateway/` | The Mac app: UDP receiver, X-Plane query (RREF), 1 Hz sender, flight recorder, SwiftUI window, Info and Help. |
-| `Gateway/Traffic Inbound/` | The iPhone and iPad app: radar, AR camera (ARKit + SceneKit), spatial audio (AVAudioEngine), connection screen, diagnostics, Info, Help. |
-| `Tools/` | `xplane_feeder.py`: a fake X-Plane (synthetic flyby, or replay of a recorded flight) so that the Gateway can be developed without X-Plane; `xplane_probe.py` and `xplane_ascolta.py`: read-only tools to look at X-Plane's output; `make_sound_pack.py`: builds the local sound pack (see Sounds). |
-| `Docs/` | Privacy policy and marketing page (single HTML files). |
-| `PIANO_ARCHITETTURALE.md` | The development log and architecture notes (in Italian). |
-
-**Flight message.** One JSON message per second: position, altitude, track, heading, pitch, roll, ground speed, vertical speed, N1 and afterburner. A reliable message announces the aircraft (`Aircraft/<folder>/<name>.acf`) at the start of the match and at every change. The observer extrapolates the aircraft between messages, with a limit of trust that depends on its speed.
-
-**Sound.** The sound heard now left the aircraft in the past: the app finds that instant on the aircraft's path (retarded time), and uses the position, the engine state and the speed of that moment. The pitch follows the Doppler ratio c / (c − v_approach); a supersonic approach is inaudible; the Mach cone crossing marks the boom. Distant sounds go through a low-pass filter based on atmospheric absorption.
-
-## Build and test
-
-Requirements: Xcode 26, a Development Team of your own, Game Center enabled for the bundle identifier.
-
-```bash
-# unit tests of the shared package
-swift test --package-path Core
-
-# build the apps
-xcodebuild -project Gateway/Gateway.xcodeproj -scheme "Traffic Inbound" -destination 'platform=iOS Simulator,name=iPhone 17' build
-xcodebuild -project Gateway/Gateway.xcodeproj -scheme Gateway -destination 'platform=macOS' build
-```
-
-Both targets use the bundle identifier `com.mfcorp.Traffic-Inbound` (change it, and the team, for your own account). Game Center needs two different accounts, one on each device, and a real iPhone: the Simulator has no real Game Center match.
-
-**Try it without X-Plane.** Close X-Plane (the feeder binds the same ports), start the Gateway, and run:
-
-```bash
-python3 Tools/xplane_feeder.py --sorvolo --rref --loop                       # synthetic flyby
-python3 Tools/xplane_feeder.py --riproduci Registri/VOLO.log --rref --loop    # replay of a recorded flight
-```
-
-The iPhone app also has demo launch arguments for the Simulator (`-radarDemo`, `-radarDemoAircraft "MK  Planes/F-15C"`, `-radarDemoSpeed 250`, …).
-
-## Sounds and licences
-
-The engine sounds are **not in this repository**. The app can use a *sound pack* (`Gateway/Traffic Inbound/SoundPack/`, ignored by git) that `Tools/make_sound_pack.py` builds from **your own** X-Plane installation. Those sounds belong to Laminar Research and to the authors of the aircraft: they must not be redistributed, and they are not. Without the pack the app builds and runs; only the engine sound is missing.
-
-The sonic boom is synthesized by the app (`BoomSynth`): no recordings involved.
 
 ## Privacy
 
