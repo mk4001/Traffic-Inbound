@@ -15,12 +15,9 @@ A pilot flies in **X-Plane 12** on a Mac. **Traffic Inbound Gateway** (macOS) li
 - [What it does](#what-it-does)
 - [Requirements](#requirements)
 - [Quick start](#quick-start)
+- [Traffic Inbound Pro](#traffic-inbound-pro-in-app-purchase)
 - [Setting up X-Plane](#setting-up-x-plane)
 - [Troubleshooting](#troubleshooting)
-- [How it is built](#how-it-is-built)
-- [Build and test](#build-and-test)
-- [Sounds and licences](#sounds-and-licences)
-- [Privacy](#privacy)
 - [Credits](#credits)
 
 ## What it does
@@ -29,6 +26,7 @@ A pilot flies in **X-Plane 12** on a Mac. **Traffic Inbound Gateway** (macOS) li
 - **AR camera:** the aircraft is drawn in the real sky, turned like the real one (heading, pitch, roll), with a halo, and a guidance arrow in the middle of the screen tells you where to turn the phone. The scene is aligned with true north.
 - **Spatial sound:** the engine of the aircraft type, placed in 3D where the aircraft was when the sound left it. The sound arrives after the delay it needs (distance ÷ 343 m/s), its pitch follows the Doppler shift, distant aircraft lose their high frequencies, and the engine follows the N1 and the afterburner read from X-Plane.
 - **Sonic boom:** a supersonic aircraft is silent while it approaches; when its shock wave (Mach cone) reaches you, a dry, low, loud boom plays in both ears.
+- **Demo, free:** no pilot at hand? Tap *Try the demo*: a simulated aircraft flies around you, with your real position and compass, six kinds to choose from. A pilot can also send a demo flight from the Gateway, with no X-Plane.
 - **Works anywhere:** the two devices find each other through Game Center. No router configuration, no accounts of our own.
 - **Read-only:** the Gateway listens to X-Plane and only reads the aircraft type and the engine state. It never changes anything in the simulator.
 
@@ -38,7 +36,7 @@ A pilot flies in **X-Plane 12** on a Mac. **Traffic Inbound Gateway** (macOS) li
 |---|---|
 | Observer | iPhone or iPad, iOS 17.6 or later. An iPhone has the GPS, the compass and the camera the AR needs. A Wi-Fi-only iPad has no GPS, so radar and AR are less precise there. Headphones recommended. |
 | Pilot | A Mac with macOS 14.6 or later, running X-Plane 12 (tested with 12.4.3) and Traffic Inbound Gateway on the same Mac. |
-| Both | A Game Center account and an internet connection. **No VPN** while connecting (see Troubleshooting). |
+| Both | A Game Center account and an internet connection. **No VPN** while connecting (see Troubleshooting). The demo needs neither. |
 
 ## Quick start
 
@@ -47,6 +45,7 @@ A pilot flies in **X-Plane 12** on a Mac. **Traffic Inbound Gateway** (macOS) li
 1. In X-Plane, turn on the network output (see below).
 2. Open **Traffic Inbound Gateway**. The *Flow* line says "active" as soon as X-Plane is flying.
 3. Sign in to Game Center and click **Find match**.
+4. No X-Plane at hand? In the section *Demo flight*, click **Start a demo flight**: the Gateway sends a scripted aircraft to your friend.
 
 **Observer (iPhone or iPad)**
 
@@ -54,7 +53,16 @@ A pilot flies in **X-Plane 12** on a Mac. **Traffic Inbound Gateway** (macOS) li
 2. Tap **Connect**: the app signs in to Game Center, finds the pilot and connects.
 3. Look at the radar, tap **Open AR**, put on headphones, look up.
 
+No pilot at hand? Tap **Try the demo** on the main screen.
+
 Both apps have an **Info** and a **Help** screen (the Mac has them in the toolbar and in the Help menu).
+
+## Traffic Inbound Pro (in-app purchase)
+
+The **demo** (a simulated aircraft flying around you, six aircraft families, with radar, AR, sound and a supersonic pass with the boom for the fighter) is **always free and unlimited**. Connecting to a real pilot is free for **one session**; after that it needs **Traffic Inbound Pro**, a one-time, non-consumable purchase (`com.mflab.trafficinbound.pro`, StoreKit 2, same scheme as RV-BMS). The Mac Gateway is free.
+
+- A session counts as the free one when it has received at least 60 s of real flight data and then ends; a connection that gave nothing does not use it up. The free session lasts up to 30 minutes of flight data (`AccessPolicy` in `Core/`, with tests).
+- The purchase, restore and refund live in the menu, under *Traffic Inbound Pro*. A local StoreKit file for testing is in `Gateway/TrafficInbound.storekit` (select it in the scheme: *Edit Scheme → Run → Options → StoreKit Configuration*).
 
 ## Setting up X-Plane
 
@@ -74,11 +82,6 @@ If macOS asks whether the Gateway can receive incoming connections, choose **All
 | No sound | The *Sound* button says "Sound on"; volume and headphones; a distant or idling aircraft is silent on purpose; a supersonic aircraft is silent while it approaches. |
 | Direction is wrong in AR | Calibrate the compass (figure-of-eight movement) and stay away from metal. |
 | The iPhone and the Gateway never find each other during development | Builds installed from Xcode use the Game Center *sandbox*; TestFlight and App Store builds use *production*. Both sides must be the same kind of build. |
-
-
-## Privacy
-
-No analytics, no advertising, no tracking, no accounts of our own, no servers. Your location is used only on your device to draw the radar and the AR view. The data that travels between the two devices is the position, attitude, type and engine state of the **simulated** aircraft, through Apple's Game Center. See the [privacy policy](https://www.mf-lab.com/Traffic-Inbound_Privacy-Policy.html).
 
 ## Credits
 
